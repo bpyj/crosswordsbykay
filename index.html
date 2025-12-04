@@ -13,12 +13,35 @@
             <span class="game-series">The Word Search Series</span>
             <span class="game-version">EDITION 3</span>
             <h1 class="game-category">VEHICLES</h1>
+            <div class="vehicle-emojis">
+                🚗 🚕 🚙 🚌 🚎 🚑 🚒 🚓 🚚 🚛 🚜 ✈️ 🚤 🚁 🚂
+            </div>
+
         </div>
         <div class="header-art-left"></div> 
         <div class="header-art-right"></div>
     </header>
 
     <main class="game-main">
+
+        <section class="mode-section">
+          <div class="mode-inner">
+            <span>Mode:</span>
+            <label>
+              <input type="radio" name="mode" value="easy">
+              Easy (→, ↓ only)
+            </label>
+            <label>
+              <input type="radio" name="mode" value="hard" checked>
+              Difficult (all directions)
+            </label>
+          </div>
+        </section>
+
+        <section class="reset-section">
+          <button id="reset-button">Reset Board</button>
+        </section>
+
         
         <section class="puzzle-grid-section">
             <div class="grid-outer">

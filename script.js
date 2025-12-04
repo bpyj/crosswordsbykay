@@ -1,63 +1,160 @@
 document.addEventListener('DOMContentLoaded', () => {
-    
+
     // --- Configuration ---
-    // The gridData as requested by the user.
-    const gridData = [
-        // 0  1  2  3  4  5  6  7  8  9
-        ['A', 'M', 'B', 'U', 'L', 'A', 'N', 'C', 'E', 'D'], // R0: AMBULANCE HORIZONTAL
-        ['J', 'E', 'E', 'P', 'R', 'N', 'I', 'O', 'R', 'S'], // R1: JEEP HORIZONTAL
-        ['T', 'O', 'L', 'T', 'S', 'I', 'N', 'T', 'U', 'T'], // R2: TRUCK DOWN, LORRY DOWN
-        ['R', 'E', 'O', 'I', 'L', 'A', 'I', 'R', 'Y', 'A'], // R3: 
-        ['U', 'I', 'R', 'P', 'L', 'R', 'A', 'E', 'V', 'O'], // R4: 
-        ['C', 'O', 'R', 'C', 'Y', 'T', 'R', 'T', 'H', 'B'], // R5: TRAIN UP, BOATS UP
-        ['K', 'D', 'Y', 'E', 'K', 'T', 'T', 'U', 'C', 'K'], // R6: 
-        ['G', 'H', 'E', 'N', 'A', 'L', 'P', 'R', 'I', 'A'], // R7: AIRPLANE REVERSE
-    ];
-
-    // The words to find
     const wordsToFind = ['AMBULANCE', 'BOATS', 'TRAIN', 'AIRPLANE', 'LORRY', 'TRUCK', 'JEEP'];
-    
-    // --- Solved Paths Storage ---
-    // Paths derived from the new grid structure:
-    const solvedPaths = [
-        // 1. AMBULANCE (Horizontal: R0, L-to-R)
-        { word: 'AMBULANCE', path: [[0,0], [0,1], [0,2], [0,3], [0,4], [0,5], [0,6], [0,7], [0,8]] }, 
-        
-        // 2. JEEP (Horizontal: R1, L-to-R)
-        { word: 'JEEP', path: [[1,0], [1,1], [1,2], [1,3]] }, 
-        
-        // 3. TRUCK (Vertical: C0, R2 to R6 - DOWN)
-        { word: 'TRUCK', path: [[2,0], [3,0], [4,0], [5,0], [6,0]] }, // T R U C K
-        
-        // 4. LORRY (Vertical: C2, R2 to R6 - DOWN)
-        { word: 'LORRY', path: [[2,2], [3,2], [4,2], [5,2], [6,2]] }, // L O R R Y
-        
-        // 5. TRAIN (Vertical: C5, R5 to R2 - UP)
-        { word: 'TRAIN', path: [[5,5], [4,5], [3,5], [2,5], [1,5] ] }, // T R A I N
-        
-        // 6. BOATS (Vertical: C9, R5 to R2 - UP)
-        { word: 'BOATS', path: [[5,9], [4,9], [3,9], [2,9]] }, // B O A T
-        
-        // 7. AIRPLANE (Horizontal: R7, R-to-L - REVERSE)
-        { word: 'AIRPLANE', path: [[7,9], [7,8], [7,7], [7,6], [7,5], [7,4], [7,3], [7,2]] }, // A I R P L A N E
-    ];
 
+    const ROWS = 10;
+    const COLS = 10;
+
+    // Grid & solution storage
+    let gridData = [];
+    let solvedPaths = [];
+
+    // Mode: "easy" = only → and ↓, "hard" = all directions
+    let currentMode = 'hard';
 
     const puzzleGrid = document.getElementById('puzzle-grid');
     const wordListElement = document.getElementById('word-list');
     const statusElement = document.getElementById('grid-status');
     const revealButton = document.getElementById('reveal-button');
+    const modeInputs = document.querySelectorAll('input[name="mode"]');
 
     let firstSelection = null;
     let foundWords = new Set();
     let foundCount = 0;
-    
-    // --- Grid & List Initialization (Unchanged) ---
+
+    // Reveal toggle state
+    let answersShown = false;
+
+    // ---------- GRID GENERATION FROM WORDS ----------
+
+    function createEmptyGrid() {
+        gridData = [];
+        for (let r = 0; r < ROWS; r++) {
+            const row = new Array(COLS).fill(null);
+            gridData.push(row);
+        }
+    }
+
+    // Direction sets
+    const DIRECTIONS_HARD = [
+        [0, 1],   // right
+        [0, -1],  // left
+        [1, 0],   // down
+        [-1, 0],  // up
+        [1, 1],   // down-right
+        [1, -1],  // down-left
+        [-1, 1],  // up-right
+        [-1, -1]  // up-left
+    ];
+
+    const DIRECTIONS_EASY = [
+        [0, 1],   // right (left -> right)
+        [1, 0],   // down (top -> bottom)
+    ];
+
+    function getDirectionsForMode() {
+        return currentMode === 'easy' ? DIRECTIONS_EASY : DIRECTIONS_HARD;
+    }
+
+    function placeWord(word) {
+        const upperWord = word.toUpperCase();
+        const len = upperWord.length;
+        const maxAttempts = 200;
+
+        const directions = getDirectionsForMode();
+
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            const [dr, dc] = directions[Math.floor(Math.random() * directions.length)];
+
+            // Compute valid start ranges so the word fits
+            let minRow = 0, maxRow = ROWS - 1;
+            let minCol = 0, maxCol = COLS - 1;
+
+            if (dr === 1) maxRow = ROWS - len;
+            if (dr === -1) minRow = len - 1;
+            if (dc === 1) maxCol = COLS - len;
+            if (dc === -1) minCol = len - 1;
+
+            if (minRow > maxRow || minCol > maxCol) continue;
+
+            const startRow = randomInt(minRow, maxRow);
+            const startCol = randomInt(minCol, maxCol);
+
+            let canPlace = true;
+            let pathCoords = [];
+
+            for (let i = 0; i < len; i++) {
+                const r = startRow + dr * i;
+                const c = startCol + dc * i;
+
+                const existing = gridData[r][c];
+                const ch = upperWord[i];
+
+                if (existing !== null && existing !== ch) {
+                    canPlace = false;
+                    break;
+                }
+                pathCoords.push([r, c]);
+            }
+
+            if (!canPlace) continue;
+
+            // Place the word
+            for (let i = 0; i < len; i++) {
+                const r = startRow + dr * i;
+                const c = startCol + dc * i;
+                gridData[r][c] = upperWord[i];
+            }
+
+            // Store solution path
+            solvedPaths.push({
+                word: upperWord,
+                path: pathCoords
+            });
+
+            return true;
+        }
+
+        console.warn(`Could not place word: ${word}`);
+        return false;
+    }
+
+    function fillRandomLetters() {
+        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        for (let r = 0; r < ROWS; r++) {
+            for (let c = 0; c < COLS; c++) {
+                if (gridData[r][c] === null) {
+                    const randChar = alphabet[Math.floor(Math.random() * alphabet.length)];
+                    gridData[r][c] = randChar;
+                }
+            }
+        }
+    }
+
+    function randomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function generateGridFromWords() {
+        createEmptyGrid();
+        solvedPaths = [];
+
+        const wordsCopy = [...wordsToFind].sort((a, b) => b.length - a.length);
+
+        wordsCopy.forEach(word => {
+            placeWord(word);
+        });
+
+        fillRandomLetters();
+    }
+
+    // ---------- RENDERING ----------
 
     function renderGrid() {
         puzzleGrid.innerHTML = '';
         const numCols = gridData[0].length;
-        
+
         gridData.forEach((row, rowIndex) => {
             row.forEach((letter, colIndex) => {
                 const cell = document.createElement('div');
@@ -70,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 puzzleGrid.appendChild(cell);
             });
         });
-        
+
         puzzleGrid.style.gridTemplateColumns = `repeat(${numCols}, var(--grid-cell-size))`;
     }
 
@@ -85,7 +182,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Core Game Logic (Full Search Capability: H, V, D - Unchanged) ---
+    // ---------- PATH VALIDATION (depends on mode) ----------
+
+    function isValidDirection(r1, c1, r2, c2, dr, dc) {
+        if (currentMode === 'easy') {
+            // Easy: only left->right and top->down
+            const isHorizontalLtoR = (r1 === r2) && (c2 > c1) && dr === 0 && dc === 1;
+            const isVerticalTopDown = (c1 === c2) && (r2 > r1) && dr === 1 && dc === 0;
+            return isHorizontalLtoR || isVerticalTopDown;
+        } else {
+            // Hard: any straight H, V, or diagonal
+            const isHorizontal = dr === 0 && dc !== 0;
+            const isVertical = dr !== 0 && dc === 0;
+            const isDiagonal = Math.abs(r2 - r1) === Math.abs(c2 - c1) && dr !== 0 && dc !== 0;
+            return isHorizontal || isVertical || isDiagonal;
+        }
+    }
 
     function getLettersInPath(startCell, endCell) {
         const r1 = parseInt(startCell.dataset.row);
@@ -96,17 +208,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const dr = Math.sign(r2 - r1);
         const dc = Math.sign(c2 - c1);
 
-        // Allow horizontal (dr=0), vertical (dc=0), or diagonal (abs(dr) = abs(dc))
-        const isHorizontal = dr === 0 && dc !== 0;
-        const isVertical = dr !== 0 && dc === 0;
-        const isDiagonal = Math.abs(r2 - r1) === Math.abs(c2 - c1) && dr !== 0 && dc !== 0;
-
-        if (!isHorizontal && !isVertical && !isDiagonal) {
-            return null; // Invalid path
-        }
-        
         if (dr === 0 && dc === 0) {
-            return null; // Same cell selected
+            return null; // Same cell
+        }
+
+        if (!isValidDirection(r1, c1, r2, c2, dr, dc)) {
+            return null;
         }
 
         let word = '';
@@ -114,24 +221,20 @@ document.addEventListener('DOMContentLoaded', () => {
         let r = r1;
         let c = c1;
 
-        // Cap to grid dimensions to prevent infinite loop/out-of-bounds errors 
-        const maxLen = Math.max(gridData.length, gridData[0].length); 
+        const maxLen = Math.max(gridData.length, gridData[0].length);
 
         for (let i = 0; i < maxLen; i++) {
             const cellId = `cell-${r}-${c}`;
             const cell = document.getElementById(cellId);
-            
-            if (!cell) break; 
+            if (!cell) break;
 
             word += cell.textContent;
             path.push(cell);
-            
+
             if (r === r2 && c === c2) break;
-            
-            r += dr; 
+
+            r += dr;
             c += dc;
-            
-            if (i === maxLen - 1) break; // Should not happen if path is valid
         }
 
         return { word, path };
@@ -142,9 +245,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!result) return null;
 
         const forwardWord = result.word;
-        // Check for words spelled in reverse direction
-        const reversedWord = result.word.split('').reverse().join(''); 
-        
+        const reversedWord = result.word.split('').reverse().join('');
+
         for (const targetWord of wordsToFind) {
             if (targetWord === forwardWord && !foundWords.has(targetWord)) {
                 highlightWord(result.path);
@@ -157,32 +259,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return null;
     }
-    
+
     function markWordAsFound(word) {
         foundWords.add(word);
         foundCount = foundWords.size;
-        
+
         const listItem = document.getElementById(`word-${word}`);
         if (listItem) {
             listItem.classList.add('found');
         }
-        
+
         updateProgress();
     }
-    
+
     function highlightWord(path) {
         path.forEach(cell => {
             cell.classList.add('highlighted');
-            cell.removeEventListener('click', handleCellClick);
+            // Keep click listeners so letters can be reused by overlapping words
         });
     }
 
+    // ---------- CLICK HANDLING ----------
+
     function handleCellClick(event) {
         const cell = event.target;
-        
-        if (cell.classList.contains('highlighted')) {
-            return;
-        }
 
         if (!firstSelection) {
             firstSelection = cell;
@@ -192,61 +292,123 @@ document.addEventListener('DOMContentLoaded', () => {
             const foundWord = checkWord(firstSelection, cell);
 
             firstSelection.classList.remove('selected');
-            
+
             if (foundWord) {
                 markWordAsFound(foundWord);
                 statusElement.textContent = `Found: ${foundWord}!`;
             } else {
-                statusElement.textContent = "That's not a word, try again (Must be straight H, V, or D)";
+                statusElement.textContent =
+                    currentMode === 'easy'
+                        ? "That's not a word, try again (Must be straight → or ↓)"
+                        : "That's not a word, try again (Must be straight H, V, or D)";
             }
-            
+
             firstSelection = null;
         }
     }
-    
+
     function updateProgress() {
-        document.getElementById('progress-panel').textContent = `Found ${foundCount} of ${wordsToFind.length}`;
+        document.getElementById('progress-panel').textContent =
+            `Found ${foundCount} of ${wordsToFind.length}`;
         if (foundCount === wordsToFind.length) {
             document.getElementById('complete-modal').style.display = 'flex';
         }
     }
 
-    // --- Reveal Answers Functionality (Unchanged) ---
+    // ---------- REVEAL ANSWERS TOGGLE ----------
+
+    function toggleRevealAnswers() {
+        if (!answersShown) {
+            revealAnswers();
+            answersShown = true;
+            revealButton.textContent = "Hide Answers";
+        } else {
+            hideAnswers();
+            answersShown = false;
+            revealButton.textContent = "Reveal Answers";
+        }
+    }
 
     function revealAnswers() {
-        revealButton.disabled = true;
         statusElement.textContent = "Answers revealed!";
 
         solvedPaths.forEach(solved => {
             const alreadyFound = foundWords.has(solved.word);
-            
-            solved.path.forEach(coords => {
-                const [r, c] = coords;
+
+            solved.path.forEach(([r, c]) => {
                 const cell = document.getElementById(`cell-${r}-${c}`);
-                
-                if (cell) {
-                    if (alreadyFound) {
-                         cell.removeEventListener('click', handleCellClick);
-                    } else {
-                        // Highlight only words not yet found, in case of overlap
-                        if (!foundWords.has(solved.word)) {
-                            cell.classList.add('reveal-answer');
-                        }
-                        cell.removeEventListener('click', handleCellClick);
-                    }
+                if (!cell) return;
+
+                if (!alreadyFound) {
+                    cell.classList.add("reveal-answer");
                 }
             });
 
             const listItem = document.getElementById(`word-${solved.word}`);
-            if (listItem) {
-                listItem.classList.add('found');
+            if (listItem) listItem.classList.add("found");
+        });
+    }
+
+    function hideAnswers() {
+        statusElement.textContent = "Answers hidden";
+
+        solvedPaths.forEach(solved => {
+            const alreadyFound = foundWords.has(solved.word);
+
+            solved.path.forEach(([r, c]) => {
+                const cell = document.getElementById(`cell-${r}-${c}`);
+                if (!cell) return;
+
+                if (!alreadyFound) {
+                    cell.classList.remove("reveal-answer");
+                }
+            });
+
+            const listItem = document.getElementById(`word-${solved.word}`);
+            if (listItem && !foundWords.has(solved.word)) {
+                listItem.classList.remove("found");
             }
         });
     }
 
-    // --- Initialization ---
-    revealButton.addEventListener('click', revealAnswers);
-    renderGrid();
-    renderWordList();
-    updateProgress();
-});
+    // ---------- MODE SWITCH & GAME RESET ----------
+
+    function resetGame() {
+        firstSelection = null;
+        foundWords = new Set();
+        foundCount = 0;
+        answersShown = false;
+        revealButton.textContent = "Reveal Answers";
+        statusElement.textContent = "Click a starting letter";
+
+        generateGridFromWords();
+        renderGrid();
+        renderWordList();
+        updateProgress();
+    }
+
+    modeInputs.forEach(input => {
+        input.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                currentMode = e.target.value; // "easy" or "hard"
+                resetGame();
+            }
+        });
+    });
+
+        // ---------- INITIALIZATION ----------
+
+        const resetButton = document.getElementById('reset-button');
+
+        revealButton.addEventListener("click", toggleRevealAnswers);
+
+        resetButton.addEventListener("click", () => {
+            // Reset reveal state + regenerate puzzle
+            answersShown = false;
+            revealButton.textContent = "Reveal Answers";
+            resetGame();
+        });
+
+        resetGame();
+    });
+

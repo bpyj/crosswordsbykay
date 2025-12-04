@@ -38,15 +38,56 @@ body {
 .game-series, .game-version {
     font-size: 0.8em;
     color: #888;
-    display: block;
+    display: block;   
 }
+
+/* Center the difficulty mode section */
+.mode-section {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.mode-inner {
+    display: inline-flex;
+    align-items: center;
+    gap: 15px;
+    padding: 8px 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.reset-section {
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+#reset-button {
+    padding: 10px 20px;
+    background-color: #4682B4; /* Steel blue */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+#reset-button:hover {
+    background-color: #5A9BD5;
+}
+
+
 
 /* --- MAIN GAME AREA - GRID --- */
 .puzzle-grid-section {
     width: 100%;
     overflow-x: auto; /* Ensures grid is viewable on small screens */
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 5px;
 }
 
 .grid-wrapper {
@@ -116,7 +157,7 @@ body {
 
 /* --- WORD LIST SECTION --- */
 .word-list-section {
-    padding: 20px;
+    padding: 5px;
     text-align: center;
 }
 
@@ -240,5 +281,4 @@ body {
     border-radius: 5px;
     cursor: pointer;
     font-size: 1em;
-
 }
