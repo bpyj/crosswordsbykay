@@ -1,0 +1,243 @@
+:root {
+    --color-primary: #FF7F50; /* Orange/Coral for titles */
+    --color-accent: #8A2BE2; /* Purple/Violet for found words */
+    --color-text: #333;
+    --color-background: #fdfcf9; /* Off-white paper background */
+    --grid-cell-size: 35px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Comic Sans MS', 'Crayon Hand', cursive, sans-serif; /* Playful font stack */
+    background-color: var(--color-background);
+    color: var(--color-text);
+    padding: 10px;
+}
+
+/* --- HEADER AREA --- */
+.game-header {
+    text-align: center;
+    padding: 20px 0;
+    border-bottom: 2px dashed #ccc;
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.game-category {
+    font-size: 2.5em;
+    color: var(--color-primary);
+    margin: 5px 0 0;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.1);
+}
+
+.game-series, .game-version {
+    font-size: 0.8em;
+    color: #888;
+    display: block;
+}
+
+/* --- MAIN GAME AREA - GRID --- */
+.puzzle-grid-section {
+    width: 100%;
+    overflow-x: auto; /* Ensures grid is viewable on small screens */
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.grid-wrapper {
+    display: inline-block;
+    padding: 10px;
+    border: 3px solid #000;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
+.grid {
+    display: grid;
+    /* 10 columns for the 10 letters wide */
+    grid-template-columns: repeat(10, var(--grid-cell-size));
+    grid-gap: 2px;
+}
+
+.grid-cell {
+    width: var(--grid-cell-size);
+    height: var(--grid-cell-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.1s;
+    user-select: none; /* Prevents text selection */
+    border: 1px solid transparent;
+}
+
+.grid-cell:hover:not(.highlighted) {
+    background-color: #ffe0b2; /* Light orange hover */
+}
+
+.grid-cell.selected {
+    background-color: #ffcc80; /* Brighter orange when selected */
+    border: 1px dashed var(--color-primary);
+}
+
+.grid-cell.highlighted {
+    background-color: var(--color-accent);
+    color: white;
+    border-radius: 3px;
+    cursor: default; /* Change cursor on found words */
+}
+
+.grid-cell.reveal-answer {
+    /* Special highlight for the reveal button */
+    background-color: #4CAF50 !important; /* Green */
+    color: white !important;
+    font-weight: bold;
+    animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+    from { opacity: 0.8; }
+    to { opacity: 1; }
+}
+
+.grid-status {
+    margin-top: 15px;
+    font-style: italic;
+    color: #666;
+    min-height: 1.2em;
+}
+
+/* --- WORD LIST SECTION --- */
+.word-list-section {
+    padding: 20px;
+    text-align: center;
+}
+
+.word-list-inner {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.word-list-title {
+    font-size: 1.5em;
+    color: var(--color-primary);
+    margin-bottom: 10px;
+}
+
+.word-list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    padding: 0;
+    margin-bottom: 20px;
+}
+
+.word-item {
+    font-weight: 500;
+    font-size: 1.1em;
+    color: #444;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    text-transform: uppercase;
+}
+
+.word-item.found {
+    text-decoration: line-through;
+    color: var(--color-accent);
+    opacity: 0.6;
+    border-color: var(--color-accent);
+}
+
+.progress-panel {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+/* --- BUTTON STYLING --- */
+#reveal-button {
+    padding: 10px 20px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+#reveal-button:hover {
+    background-color: #555;
+}
+
+#reveal-button:disabled {
+    background-color: #ccc;
+    cursor: default;
+}
+
+
+/* --- THEME EXTRAS & FOOTER (unchanged) --- */
+.theme-extras {
+    text-align: center;
+    padding: 20px 0;
+    margin-top: 20px;
+    border-top: 2px dashed #ccc;
+    border-bottom: 2px dashed #ccc;
+}
+
+.theme-doodles span {
+    font-size: 1.5em;
+}
+
+.game-footer {
+    text-align: center;
+    padding: 10px 0;
+    font-size: 0.8em;
+    color: #aaa;
+}
+
+/* --- MODAL (Game Complete) --- */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: none; 
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal {
+    background: white;
+    padding: 40px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.modal button {
+    padding: 10px 20px;
+    margin: 5px;
+    background-color: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+}

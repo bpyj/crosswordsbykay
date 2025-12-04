@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicles Word Search - Edition 3</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <header class="game-header">
+        <div class="game-info">
+            <span class="game-series">The Word Search Series</span>
+            <span class="game-version">EDITION 3</span>
+            <h1 class="game-category">VEHICLES</h1>
+        </div>
+        <div class="header-art-left"></div> 
+        <div class="header-art-right"></div>
+    </header>
+
+    <main class="game-main">
+        
+        <section class="puzzle-grid-section">
+            <div class="grid-outer">
+                <div class="grid-wrapper">
+                    <div class="grid" id="puzzle-grid">
+                        </div>
+                </div>
+            </div>
+            <div class="grid-status" id="grid-status">Click a starting letter</div>
+        </section>
+
+        <section class="word-list-section">
+            <div class="word-list-inner">
+                <h2 class="word-list-title">Words to Find</h2>
+                <ul class="word-list" id="word-list">
+                    </ul>
+                <div class="progress-panel" id="progress-panel">Found 0 of 7</div>
+                <div class="hint-panel">
+                    <button id="reveal-button">Reveal Answers</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <section class="theme-extras">
+        <div class="theme-doodles">
+            <span>🚗 🚕 🚙 🚌 🚎 🚑 🚒 🚓 🚚 🚛 🚜 ✈️ 🚤 🚁 🚂</span>
+        </div>
+    </section>
+
+    <footer class="game-footer">
+        <p>&copy; 2025 The Word Search Series</p>
+    </footer>
+
+    <div class="overlay game-complete-overlay" id="complete-modal">
+        <div class="modal game-complete-modal">
+            <h2>🎉 Congratulations!</h2>
+            <p>You found all the vehicles!</p>
+            <div class="modal-actions">
+                <button onclick="window.location.reload()">Play Again</button>
+                <button>Next Edition</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
