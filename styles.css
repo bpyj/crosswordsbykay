@@ -13,7 +13,7 @@
 }
 
 body {
-    font-family: 'Comic Sans MS', 'Crayon Hand', cursive, sans-serif; /* Playful font stack */
+    font-family: 'Comic Sans MS', sans-serif; /* Removes the cursive option */
     background-color: var(--color-background);
     color: var(--color-text);
     padding: 10px;
@@ -240,4 +240,5 @@ body {
     border-radius: 5px;
     cursor: pointer;
     font-size: 1em;
+
 }
